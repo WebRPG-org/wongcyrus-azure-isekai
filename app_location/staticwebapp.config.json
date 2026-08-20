@@ -15,12 +15,6 @@
     },
     "routes": [
         {
-            "route": "/.auth/*",
-            "allowedRoles": [
-                "anonymous"
-            ]
-        },
-        {
             "route": "/login",
             "redirect": "/.auth/login/aad",
             "statusCode": 302,
@@ -36,6 +30,12 @@
         {
             "route": "/.auth/login/twitter",
             "statusCode": 404
+        },
+        {
+            "route": "/.auth/*",
+            "allowedRoles": [
+                "anonymous"
+            ]
         },
         {
             "route": "/logout",

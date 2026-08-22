@@ -64,7 +64,8 @@
             font-size: 1.1em;
         }
         
-        input[type="email"] {
+        input[type="email"],
+        input[type="text"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #ddd;
@@ -74,7 +75,8 @@
             box-sizing: border-box;
         }
         
-        input[type="email"]:focus {
+        input[type="email"]:focus,
+        input[type="text"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -164,7 +166,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        .credentials-example {
+        .registration-info {
             background: #e8f4fd;
             border: 1px solid #bee5eb;
             border-radius: 5px;
@@ -173,7 +175,7 @@
             font-size: 0.9em;
         }
         
-        .credentials-example code {
+        .registration-info code {
             background: #f8f9fa;
             padding: 2px 5px;
             border-radius: 3px;
@@ -192,15 +194,15 @@
         <div id="registrationForm" class="registration-form">
             <form id="registrationFormElement" method="post" action="/api/registration">
                 <div class="form-group">
-                    <label for="credentials">Azure Service Principal Credentials:</label>
-                    <textarea id="credentials" name="credentials" required 
-                              placeholder="Paste your Azure service principal JSON here..."></textarea>
+                    <label for="subscriptionId">Azure Subscription ID:</label>
+                    <input id="subscriptionId" name="subscriptionId" type="text" required
+                           pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                           placeholder="00000000-0000-0000-0000-000000000000">
                     <div class="help-text">
-                        Please paste the complete JSON output from your Azure service principal creation.
+                        Run the managed-identity onboarding script first, then enter the subscription ID it reports.
                     </div>
-                    <div class="credentials-example">
-                        <strong>Expected format:</strong><br>
-                        <code>{"appId": "...", "displayName": "...", "password": "...", "tenant": "..."}</code>
+                    <div class="registration-info">
+                        No service principal or password is required.
                     </div>
                 </div>
                 
@@ -252,32 +254,8 @@
                 loadingDiv.style.display = 'none';
                 formDiv.style.display = 'block';
                 
-                alert('Registration failed. Please check your credentials and try again.');
+                alert('Registration failed. Check the subscription ID and managed-identity access.');
             });
-        });
-
-        // Auto-resize textarea
-        const textarea = document.getElementById('credentials');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight + 10) + 'px';
-        });
-
-        // Validate JSON format
-        textarea.addEventListener('blur', function() {
-            const value = this.value.trim();
-            if (value) {
-                try {
-                    const parsed = JSON.parse(value);
-                    if (!parsed.appId || !parsed.displayName || !parsed.password || !parsed.tenant) {
-                        this.setCustomValidity('Please ensure your JSON contains appId, displayName, password, and tenant fields.');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                } catch (e) {
-                    this.setCustomValidity('Please enter valid JSON format.');
-                }
-            }
         });
     </script>
 </body>

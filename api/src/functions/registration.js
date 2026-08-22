@@ -106,21 +106,18 @@ app.http('registration', {
             }
             clearTimeout(timeout);
 
+            const result = await response.text();
             if (!response.ok) {
                 context.log.error(`Failed to call StudentRegistrationFunctionUrl POST: ${response.statusText}`);
                 return {
                     status: response.status,
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'text/plain'
                     },
-                    jsonBody: {
-                        status: 'ERROR',
-                        message: `Failed to call StudentRegistrationFunctionUrl: ${response.statusText}`
-                    }
+                    body: result || `Registration failed: ${response.statusText}`
                 };
             }
 
-            const result = await response.text();
             context.log('Registration response:', result);
 
             // Return the result as HTML (since the original function returns HTML)

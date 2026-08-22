@@ -1,27 +1,19 @@
 const { app } = require('@azure/functions');
+const {
+    createSignedBackendRequest,
+    getAuthenticatedEmail
+} = require('../shared/proxy-security');
 
 app.http('pass-task', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
         try {
-            const header = request.headers.get('x-ms-client-principal');
-            let email = 'unknown';
-            
-            if (header) {
-                try {
-                    const encoded = Buffer.from(header, 'base64');
-                    const decoded = encoded.toString('ascii');
-                    const clientPrincipal = JSON.parse(decoded);
-                    email = clientPrincipal?.userDetails || 'unknown';
-                } catch (authError) {
-                    context.log.warn('Failed to parse authentication header:', authError);
-                }
-            }
+            const email = getAuthenticatedEmail(request, context);
 
             context.log(`HTTP GET /pass-task called with URL: ${request.url}`);
 
-            if (email === 'unknown') {
+            if (!email) {
                 context.log.error('User not authenticated - email is unknown');
                 return {
                     status: 401,
@@ -33,7 +25,6 @@ app.http('pass-task', {
             }
 
             const passTaskFunctionUrl = process.env.PassTaskFunctionUrl;
-            context.log(`PassTaskFunctionUrl: ${passTaskFunctionUrl}`);
             
             if (!passTaskFunctionUrl) {
                 context.log.error('PassTaskFunctionUrl environment variable is not set.');
@@ -46,8 +37,6 @@ app.http('pass-task', {
                 };
             }
 
-            const params = new URLSearchParams({ email });
-
             const controller = new AbortController();
             const timeout = setTimeout(() => {
                 controller.abort();
@@ -56,10 +45,15 @@ app.http('pass-task', {
 
             let response;
             try {
-                const fullUrl = `${passTaskFunctionUrl}&${params.toString()}`;
-                context.log(`Calling PassTaskFunctionUrl with: ${fullUrl}`);
-                response = await fetch(fullUrl, {
+                const backendRequest = createSignedBackendRequest(
+                    passTaskFunctionUrl,
+                    'GET',
+                    {},
+                    email);
+                context.log('Calling PassTaskFunction backend.');
+                response = await fetch(backendRequest.url, {
                     method: 'GET',
+                    headers: backendRequest.headers,
                     signal: controller.signal
                 });
             } catch (err) {

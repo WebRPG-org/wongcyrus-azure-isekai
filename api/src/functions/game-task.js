@@ -1,28 +1,20 @@
 const { app } = require('@azure/functions');
+const {
+    createSignedBackendRequest,
+    getAuthenticatedEmail
+} = require('../shared/proxy-security');
 
 app.http('game-task', {
     methods: ['GET'],
     authLevel: 'anonymous',
     handler: async (request, context) => {
         try {
-            const header = request.headers.get('x-ms-client-principal');
-            let email = 'unknown';
-            
-            if (header) {
-                try {
-                    const encoded = Buffer.from(header, 'base64');
-                    const decoded = encoded.toString('ascii');
-                    const clientPrincipal = JSON.parse(decoded);
-                    email = clientPrincipal?.userDetails || 'unknown';
-                } catch (authError) {
-                    context.log.warn('Failed to parse authentication header:', authError);
-                }
-            }
+            const email = getAuthenticatedEmail(request, context);
 
             context.log(`HTTP GET /game-task called with URL: ${request.url}`);
 
             // Don't proxy the call if email is unknown (user not authenticated)
-            if (email === 'unknown') {
+            if (!email) {
                 context.log.error('User not authenticated - email is unknown');
                 return {
                     status: 401,
@@ -39,7 +31,6 @@ app.http('game-task', {
             context.log(`Game: ${game}, NPC: ${npc}, User: ${email}`);
             
             const gameTaskFunctionUrl = process.env.GameTaskFunctionUrl;
-            context.log(`GameTaskFunctionUrl: ${gameTaskFunctionUrl}`);
             
             if (!gameTaskFunctionUrl) {
                 context.log.error('GameTaskFunctionUrl environment variable is not set.');
@@ -54,8 +45,7 @@ app.http('game-task', {
 
             const params = new URLSearchParams({
                 game,
-                npc,
-                email
+                npc
             });
 
             // Add timeout to prevent hanging fetch
@@ -67,10 +57,15 @@ app.http('game-task', {
 
             let response;
             try {
-                const fullUrl = `${gameTaskFunctionUrl}&${params.toString()}`;
-                context.log(`Calling GameTaskFunctionUrl with: ${fullUrl}`);
-                response = await fetch(fullUrl, {
+                const backendRequest = createSignedBackendRequest(
+                    gameTaskFunctionUrl,
+                    'GET',
+                    Object.fromEntries(params),
+                    email);
+                context.log('Calling GameTaskFunction backend.');
+                response = await fetch(backendRequest.url, {
                     method: 'GET',
+                    headers: backendRequest.headers,
                     signal: controller.signal
                 });
             } catch (err) {

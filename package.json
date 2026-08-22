@@ -13,10 +13,13 @@
     "build": "cd api && npm install && npm run build",
     "dev": "swa start ./ --api-location api"
   },
+  "engines": {
+    "node": ">=24.19.0"
+  },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^15.3.0",
-    "prettier": "^3.4.2"
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6"
   },
   "husky": {
     "hooks": {

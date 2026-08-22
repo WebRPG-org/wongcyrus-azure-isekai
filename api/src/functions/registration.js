@@ -1,4 +1,8 @@
 const { app } = require('@azure/functions');
+const {
+    createSignedBackendRequest,
+    getAuthenticatedEmail
+} = require('../shared/proxy-security');
 
 app.http('registration', {
     methods: ['POST'],
@@ -7,24 +11,12 @@ app.http('registration', {
         try {
             context.log('HTTP POST /registration called');
 
-            const header = request.headers.get('x-ms-client-principal');
-            let email = 'unknown';
-            
-            if (header) {
-                try {
-                    const encoded = Buffer.from(header, 'base64');
-                    const decoded = encoded.toString('ascii');
-                    const clientPrincipal = JSON.parse(decoded);
-                    email = clientPrincipal?.userDetails || 'unknown';
-                } catch (authError) {
-                    context.log.warn('Failed to parse authentication header:', authError);
-                }
-            }
+            const email = getAuthenticatedEmail(request, context);
 
             context.log(`User email from authentication: ${email}`);
 
             // Don't proxy the call if email is unknown (user not authenticated)
-            if (email === 'unknown') {
+            if (!email) {
                 context.log.error('User not authenticated - email is unknown');
                 return {
                     status: 401,
@@ -51,7 +43,6 @@ app.http('registration', {
             }
 
             const studentRegistrationFunctionUrl = process.env.StudentRegistrationFunctionUrl;
-            context.log(`StudentRegistrationFunctionUrl: ${studentRegistrationFunctionUrl}`);
             
             if (!studentRegistrationFunctionUrl) {
                 context.log.error('StudentRegistrationFunctionUrl environment variable is not set.');
@@ -70,11 +61,7 @@ app.http('registration', {
             // Handle POST request - proxy the form submission
             const formData = await request.formData();
             
-            // Add email from authentication to form data
-            formData.set('email', email);
-            
             context.log('Processing POST registration request');
-            context.log(`Email added to form data: ${email}`);
 
             const controller = new AbortController();
             const timeout = setTimeout(() => {
@@ -84,9 +71,15 @@ app.http('registration', {
 
             let response;
             try {
-                context.log(`Calling StudentRegistrationFunctionUrl POST: ${studentRegistrationFunctionUrl}`);
-                response = await fetch(studentRegistrationFunctionUrl, {
+                const backendRequest = createSignedBackendRequest(
+                    studentRegistrationFunctionUrl,
+                    'POST',
+                    {},
+                    email);
+                context.log('Calling StudentRegistrationFunction backend.');
+                response = await fetch(backendRequest.url, {
                     method: 'POST',
+                    headers: backendRequest.headers,
                     body: formData,
                     signal: controller.signal
                 });

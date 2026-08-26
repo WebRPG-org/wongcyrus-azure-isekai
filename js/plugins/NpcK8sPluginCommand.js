@@ -195,9 +195,6 @@
           if (json.task_completed) {
             $gameMessage.add('🎉 Congratulations! Task completed! 🎉');
             $gameMessage.add('Talk to me again for your next challenge!');
-            if (json.easter_egg_url) {
-              popitup(json.easter_egg_url);
-            }
           }
 
           // Show test results if available (for failed attempts)

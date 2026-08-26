@@ -26,55 +26,6 @@
     window.focus();
   };
 
-  const showReportLink = (url) => {
-    const existing = document.getElementById('grading-report-link');
-    if (existing) {
-      existing.parentNode.removeChild(existing);
-    }
-    if (!url) {
-      return;
-    }
-
-    const container = document.createElement('div');
-    container.id = 'grading-report-link';
-    Object.assign(container.style, {
-      position: 'fixed',
-      top: '12px',
-      right: '12px',
-      zIndex: '10000',
-      padding: '12px',
-      border: '2px solid #ffffff',
-      borderRadius: '6px',
-      background: 'rgba(0, 0, 0, 0.9)',
-      fontFamily: 'sans-serif',
-    });
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = 'Open grading error log';
-    Object.assign(link.style, {
-      color: '#ffffff',
-      fontWeight: 'bold',
-    });
-    container.appendChild(link);
-
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.textContent = 'Close';
-    close.addEventListener('click', () => {
-      container.parentNode.removeChild(container);
-    });
-    Object.assign(close.style, {
-      marginLeft: '12px',
-      cursor: 'pointer',
-    });
-    container.appendChild(close);
-
-    document.body.appendChild(container);
-  };
-
   // Display the text response within the window limits
   const wrapText = (text) => {
     const words = text.split(' ');
@@ -227,8 +178,9 @@
             $gameMessage.add(wrapText(json.message));
           }
 
-          showReportLink('');
-          let popupUrl = json.easter_egg_url || '';
+          if (json.easter_egg_url) {
+            popitup(json.easter_egg_url);
+          }
 
           // Show additional information
           if (json.score !== undefined) {
@@ -252,14 +204,9 @@
             if (passed < total) {
               $gameMessage.add('Please fix the issues and talk to me again.');
               if (json.additional_data.testResultXmlUrl) {
-                showReportLink(json.additional_data.testResultXmlUrl);
-                $gameMessage.add('Use the grading error log link above the game window for details.');
+                popitup(json.additional_data.testResultXmlUrl);
               }
             }
-          }
-
-          if (popupUrl) {
-            popitup(popupUrl);
           }
 
           // Show next steps (only for successful responses)

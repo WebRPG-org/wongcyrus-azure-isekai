@@ -183,7 +183,7 @@
         }
 
         button,
-        .back-link {
+        .action-link {
             border: 0;
             border-radius: 7px;
             cursor: pointer;
@@ -198,6 +198,28 @@
         .secondary-button {
             background: #1570ef;
             color: white;
+        }
+
+        .logout-link {
+            background: #475467;
+            color: white;
+        }
+
+        .registration-link {
+            color: #175cd3;
+            display: inline-block;
+            font-weight: 650;
+            margin-top: 6px;
+        }
+
+        .registration-link[hidden] {
+            display: none;
+        }
+
+        .page-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .danger-button {
@@ -277,6 +299,10 @@
                     <div>
                         <span class="label">Registered subscription</span>
                         <span id="subscriptionId" class="value"></span>
+                        <a id="registrationLink" class="registration-link"
+                           href="registration.html" hidden>
+                            Register a subscription
+                        </a>
                     </div>
                     <div>
                         <span class="label">Last activity</span>
@@ -339,7 +365,11 @@
             </section>
         </div>
 
-        <a href="index.html" class="back-link">Back to Game</a>
+        <nav class="page-actions" aria-label="Account actions">
+            <a href="index.html" class="action-link back-link">Back to Game</a>
+            <a href="/.auth/logout?post_logout_redirect_uri=/"
+               class="action-link logout-link">Log out</a>
+        </nav>
     </main>
 
     <dialog id="resetDialog" aria-labelledby="resetDialogTitle">
@@ -366,6 +396,7 @@
             content: document.getElementById('content'),
             email: document.getElementById('email'),
             subscriptionId: document.getElementById('subscriptionId'),
+            registrationLink: document.getElementById('registrationLink'),
             lastActivity: document.getElementById('lastActivity'),
             totalScore: document.getElementById('totalScore'),
             passedCount: document.getElementById('passedCount'),
@@ -430,6 +461,7 @@
             elements.email.textContent = profile.email || 'Unknown';
             elements.subscriptionId.textContent =
                 profile.subscriptionId || 'Not registered';
+            elements.registrationLink.hidden = Boolean(profile.subscriptionId);
             elements.lastActivity.textContent = formatDate(profile.lastActivity);
             elements.totalScore.textContent = profile.totalMarks || 0;
             elements.passedCount.textContent = passedTasks.length;

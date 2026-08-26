@@ -18,9 +18,10 @@ client principal and sends a short-lived signed assertion to the grading
 Function.
 
 The teacher dashboard requires the signed-in address in the server-side
-`ADMIN_EMAILS` allowlist at both the proxy and backend. It provides controlled
-message-cache operations and exact student registration lookup/release without
-exposing backend keys or unrestricted student browsing.
+`ADMIN_EMAILS` allowlist at both the proxy and backend. Teachers can create
+owned classes, import CSV rosters, view live class/task/student performance,
+export filtered CSV results, and use controlled cache and registration support
+tools without exposing backend keys or unrestricted student browsing.
 
 
 ## Demo

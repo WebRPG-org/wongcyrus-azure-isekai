@@ -91,7 +91,7 @@ test('cache statistics are proxied with signed operator identity', async () => {
 
 test('registration release forwards exact student email', async () => {
     process.env.StudentRegistrationAdminFunctionUrl =
-        'https://example.test/api/operator/subscription-registration?code=admin-key';
+        'https://example.test/api/StudentRegistrationAdminFunction?code=admin-key';
     const request = createRequest('registration', 'DELETE');
     request.query.set('email', ' Student@Example.com ');
     const originalFetch = global.fetch;
@@ -122,4 +122,74 @@ test('unknown operation returns not found', async () => {
         createContext());
 
     assert.equal(result.status, 404);
+});
+
+test('class creation maps teacher parameters to the class backend', async () => {
+    process.env.ClassPerformanceAdminFunctionUrl =
+        'https://example.test/api/ClassPerformanceAdminFunction?code=class-key';
+    const request = createRequest('classes', 'POST');
+    request.query.set('name', 'Cloud 2A');
+    const originalFetch = global.fetch;
+    let backendRequest;
+    global.fetch = async (url, options) => {
+        backendRequest = { url, options };
+        return new Response('{"success":true}', {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+        });
+    };
+    try {
+        const result = await handleAdmin(request, createContext());
+        const url = new URL(backendRequest.url);
+
+        assert.equal(result.status, 200);
+        assert.equal(backendRequest.options.method, 'POST');
+        assert.equal(url.searchParams.get('action'), 'class');
+        assert.equal(url.searchParams.get('name'), 'Cloud 2A');
+        assert.equal(url.searchParams.has('code'), false);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test('roster import forwards only required signed query data', async () => {
+    process.env.ClassPerformanceAdminFunctionUrl =
+        'https://example.test/api/ClassPerformanceAdminFunction?code=class-key';
+    const request = createRequest('roster', 'POST');
+    request.query.set('classId', 'class-id');
+    request.query.set('emails', 'one@example.com|two@example.com');
+    request.query.set('ignored', 'not-forwarded');
+    const originalFetch = global.fetch;
+    let backendUrl;
+    global.fetch = async url => {
+        backendUrl = new URL(url);
+        return new Response('{"success":true}', {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+        });
+    };
+    try {
+        const result = await handleAdmin(request, createContext());
+
+        assert.equal(result.status, 200);
+        assert.equal(backendUrl.searchParams.get('action'), 'roster');
+        assert.equal(backendUrl.searchParams.get('classId'), 'class-id');
+        assert.equal(
+            backendUrl.searchParams.get('emails'),
+            'one@example.com|two@example.com');
+        assert.equal(backendUrl.searchParams.has('ignored'), false);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test('performance request requires a class ID before backend call', async () => {
+    process.env.ClassPerformanceAdminFunctionUrl =
+        'https://example.test/api/ClassPerformanceAdminFunction?code=class-key';
+    const result = await handleAdmin(
+        createRequest('performance'),
+        createContext());
+
+    assert.equal(result.status, 400);
+    assert.equal(result.jsonBody.error, 'classId is required.');
 });

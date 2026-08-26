@@ -1,477 +1,735 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azure Isekai - Teacher Administration</title>
-    <link rel="icon" href="icon/icon.png" type="image/png">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teacher Administration - Azure Isekai</title>
     <style>
         :root {
-            color-scheme: light;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color-scheme: dark;
+            --bg: #07111f;
+            --panel: #102238;
+            --panel-2: #162e49;
+            --border: #2c4f70;
+            --text: #f4f8fc;
+            --muted: #a8bdd0;
+            --accent: #55c2ff;
+            --success: #61d095;
+            --warning: #ffcb6b;
+            --danger: #ff7b7b;
         }
-
-        * {
-            box-sizing: border-box;
-        }
-
+        * { box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #344054, #101828);
-            color: #1d2939;
             margin: 0;
             min-height: 100vh;
-            padding: 20px;
+            font-family: Inter, system-ui, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, #163f65 0, transparent 35rem),
+                var(--bg);
         }
-
-        .container {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
-            margin: 0 auto;
-            max-width: 1050px;
-            padding: 32px;
-        }
-
-        h1,
-        h2,
-        p {
-            margin-top: 0;
-        }
-
+        header, main { width: min(1440px, calc(100% - 32px)); margin: auto; }
         header {
-            margin-bottom: 28px;
-        }
-
-        header h1 {
-            margin-bottom: 8px;
-        }
-
-        .muted {
-            color: #667085;
-        }
-
-        .message {
-            border-radius: 8px;
-            display: none;
-            margin-bottom: 20px;
-            padding: 14px 16px;
-        }
-
-        .error {
-            background: #fef3f2;
-            border: 1px solid #fecdca;
-            color: #b42318;
-        }
-
-        .success {
-            background: #ecfdf3;
-            border: 1px solid #abefc6;
-            color: #067647;
-        }
-
-        .section {
-            border: 1px solid #e4e7ec;
-            border-radius: 12px;
-            margin-bottom: 22px;
-            padding: 22px;
-        }
-
-        .section.warning {
-            background: #fffcf5;
-            border-color: #fec84b;
-        }
-
-        .grid {
-            display: grid;
-            gap: 14px;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-        }
-
-        .stat {
-            background: #f2f4f7;
-            border-radius: 9px;
-            padding: 16px;
-        }
-
-        .stat strong {
-            display: block;
-            font-size: 1.7rem;
-            margin-bottom: 4px;
-        }
-
-        .label {
-            color: #667085;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .actions,
-        .navigation,
-        form {
-            align-items: end;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 28px 0 18px;
+        }
+        h1, h2, h3 { margin: 0; }
+        h1 { font-size: clamp(1.5rem, 3vw, 2.3rem); }
+        h2 { font-size: 1.25rem; }
+        h3 { font-size: 1rem; }
+        p { color: var(--muted); }
+        a { color: var(--accent); }
+        nav { display: flex; flex-wrap: wrap; gap: 10px; }
+        nav a, button, .button {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 13px;
+            color: var(--text);
+            background: var(--panel-2);
+            text-decoration: none;
+            font: inherit;
+            cursor: pointer;
+        }
+        button:hover, .button:hover { border-color: var(--accent); }
+        button.primary { background: #126da1; border-color: var(--accent); }
+        button.danger { background: #6e2930; border-color: var(--danger); }
+        button:disabled { opacity: .55; cursor: not-allowed; }
+        main { padding-bottom: 48px; }
+        .panel {
+            margin-bottom: 18px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--panel) 94%, transparent);
+            box-shadow: 0 14px 40px rgb(0 0 0 / 18%);
+        }
+        .panel-header, .toolbar, .inline {
+            display: flex;
+            align-items: center;
             flex-wrap: wrap;
             gap: 10px;
         }
-
-        label {
-            display: block;
-            flex: 1 1 320px;
-            font-weight: 650;
+        .panel-header { justify-content: space-between; margin-bottom: 16px; }
+        .toolbar { margin-bottom: 14px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+            gap: 12px;
         }
-
-        input {
-            border: 1px solid #98a2b3;
-            border-radius: 7px;
-            display: block;
-            font: inherit;
-            margin-top: 7px;
-            padding: 10px;
-            width: 100%;
-        }
-
-        button,
-        .link-button {
-            border: 0;
-            border-radius: 7px;
-            cursor: pointer;
-            display: inline-block;
-            font: inherit;
-            font-weight: 650;
-            padding: 11px 18px;
-            text-decoration: none;
-        }
-
-        button {
-            background: #1570ef;
-            color: white;
-        }
-
-        button.secondary,
-        .link-button {
-            background: #475467;
-            color: white;
-        }
-
-        button.danger {
-            background: #d92d20;
-        }
-
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.55;
-        }
-
-        .registration-result {
-            background: #f9fafb;
-            border-radius: 8px;
-            margin-top: 16px;
+        .metric {
+            min-height: 105px;
             padding: 16px;
+            border-radius: 10px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
         }
-
-        .registration-result[hidden],
-        #dashboard[hidden],
-        #accessDenied[hidden] {
+        .metric span { display: block; color: var(--muted); font-size: .86rem; }
+        .metric strong { display: block; margin-top: 8px; font-size: 1.65rem; }
+        label { color: var(--muted); font-size: .9rem; }
+        input, select {
+            min-height: 40px;
+            padding: 8px 10px;
+            color: var(--text);
+            background: #091929;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font: inherit;
+        }
+        input[type="search"] { min-width: min(280px, 100%); }
+        input[type="file"] { max-width: 320px; }
+        .grow { flex: 1; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 11px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap;
+        }
+        th { color: var(--muted); font-size: .82rem; text-transform: uppercase; }
+        tbody tr:hover { background: rgb(85 194 255 / 6%); }
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: .78rem;
+            background: #31465c;
+        }
+        .status.good { color: #b9f5d2; background: #185238; }
+        .status.warn { color: #ffe3a5; background: #614b17; }
+        .message {
             display: none;
+            margin-bottom: 16px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel-2);
         }
-
-        .value {
-            font-family: "Courier New", monospace;
-            overflow-wrap: anywhere;
+        .message.error { border-color: var(--danger); color: #ffd1d1; }
+        .empty { padding: 24px; color: var(--muted); text-align: center; }
+        .muted { color: var(--muted); }
+        .support-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 18px;
         }
-
-        @media (max-width: 620px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-            }
+        dialog {
+            width: min(900px, calc(100% - 24px));
+            max-height: 90vh;
+            overflow: auto;
+            color: var(--text);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        dialog::backdrop { background: rgb(0 0 0 / 70%); }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin: 14px 0;
+        }
+        [hidden] { display: none !important; }
+        @media (max-width: 700px) {
+            header { align-items: flex-start; flex-direction: column; }
+            .panel { padding: 14px; }
+            .support-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <main class="container">
-        <header>
-            <h1>Teacher Administration</h1>
-            <p class="muted">
-                Operator-only grading controls and student registration support
-            </p>
-        </header>
+<header>
+    <div>
+        <h1>Teacher Administration</h1>
+        <p>Class performance, task analytics, and operator support controls</p>
+    </div>
+    <nav>
+        <a href="/">Back to Game</a>
+        <a href="/pass-task.html">Player Progress</a>
+        <a href="/.auth/logout?post_logout_redirect_uri=/">Log out</a>
+    </nav>
+</header>
 
-        <div id="message" class="message" role="status"></div>
-        <p id="loading" class="muted">Checking operator access...</p>
+<main>
+    <div id="message" class="message" role="alert"></div>
+    <section id="accessDenied" class="panel" hidden>
+        <h2>Operator access required</h2>
+        <p>Your signed-in account is not configured as a teacher operator.</p>
+    </section>
 
-        <section id="accessDenied" class="section warning" hidden>
-            <h2>Operator access required</h2>
-            <p>
-                Your signed-in account is not in the grading Function's
-                operator allowlist.
-            </p>
+    <div id="dashboard" hidden>
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Classes</h2>
+                    <p id="operatorLine">Signed in as <strong id="operatorEmail"></strong></p>
+                </div>
+                <button id="refreshClasses">Refresh</button>
+            </div>
+            <div class="toolbar">
+                <label for="classSelect">Current class</label>
+                <select id="classSelect" class="grow">
+                    <option value="">Create or select a class</option>
+                </select>
+                <input id="newClassName" maxlength="100" placeholder="New class name">
+                <button id="createClass" class="primary">Create class</button>
+                <button id="deleteClass" class="danger" disabled>Delete class</button>
+            </div>
+            <div id="rosterControls" class="toolbar" hidden>
+                <label for="rosterFile">Import roster CSV</label>
+                <input id="rosterFile" type="file" accept=".csv,text/csv,text/plain">
+                <button id="importRoster">Import emails</button>
+                <span class="muted">CSV may contain an email column or email values in any column.</span>
+            </div>
         </section>
 
-        <div id="dashboard" hidden>
-            <section class="section">
-                <h2>Operator Session</h2>
-                <span class="label">Signed-in operator</span>
-                <div id="operatorEmail" class="value"></div>
-            </section>
-
-            <section class="section">
-                <h2>AI Message Cache</h2>
+        <div id="performanceSections" hidden>
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 id="performanceTitle">Class overview</h2>
+                    <button id="refreshPerformance">Refresh performance</button>
+                </div>
                 <div class="grid">
-                    <div class="stat">
-                        <strong id="totalMessages">-</strong>
-                        <span>Total messages</span>
-                    </div>
-                    <div class="stat">
-                        <strong id="totalHits">-</strong>
-                        <span>Total hits</span>
-                    </div>
-                    <div class="stat">
-                        <strong id="hitRate">-</strong>
-                        <span>Hit rate</span>
-                    </div>
-                    <div class="stat">
-                        <strong id="unusedMessages">-</strong>
-                        <span>Unused messages</span>
-                    </div>
-                </div>
-                <div class="actions" style="margin-top: 16px;">
-                    <button id="reloadStats" type="button">Reload statistics</button>
-                    <button id="refreshCache" class="secondary" type="button">
-                        Refresh generated messages
-                    </button>
-                    <button id="resetCounters" class="danger" type="button">
-                        Reset hit counters
-                    </button>
+                    <div class="metric"><span>Students</span><strong id="totalStudents">0</strong></div>
+                    <div class="metric"><span>Registered</span><strong id="registeredStudents">0</strong></div>
+                    <div class="metric"><span>Active tasks</span><strong id="activeStudents">0</strong></div>
+                    <div class="metric"><span>Average marks</span><strong id="averageMarks">0</strong></div>
+                    <div class="metric"><span>Completed tasks</span><strong id="completedTasks">0</strong></div>
+                    <div class="metric"><span>Failed attempts</span><strong id="failedAttempts">0</strong></div>
                 </div>
             </section>
 
-            <section class="section">
-                <h2>Student Subscription Registration</h2>
-                <p class="muted">
-                    Look up one student by exact email. Releasing registration
-                    preserves Azure access, tags, progress, reports, and results.
-                </p>
-                <form id="registrationLookup">
-                    <label for="studentEmail">
-                        Student email
-                        <input id="studentEmail" type="email" required
-                               placeholder="student@example.com">
-                    </label>
-                    <button type="submit">Look up registration</button>
-                </form>
-                <div id="registrationResult" class="registration-result" hidden>
-                    <div>
-                        <span class="label">Student</span>
-                        <div id="registrationEmail" class="value"></div>
-                    </div>
-                    <div style="margin-top: 12px;">
-                        <span class="label">Status</span>
-                        <div id="registrationStatus"></div>
-                    </div>
-                    <div id="subscriptionRow" style="margin-top: 12px;" hidden>
-                        <span class="label">Subscription ID</span>
-                        <div id="registrationSubscription" class="value"></div>
-                    </div>
-                    <button id="releaseRegistration" class="danger"
-                            style="margin-top: 16px;" type="button" hidden>
-                        Release registration
-                    </button>
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Student performance</h2>
+                    <button id="exportStudents">Export CSV</button>
                 </div>
+                <div class="toolbar">
+                    <input id="studentSearch" type="search" placeholder="Search email or active task">
+                    <select id="registrationFilter">
+                        <option value="all">All registrations</option>
+                        <option value="registered">Registered</option>
+                        <option value="unregistered">Not registered</option>
+                    </select>
+                    <select id="activityFilter">
+                        <option value="all">All activity</option>
+                        <option value="active">Has active task</option>
+                        <option value="inactive">No active task</option>
+                    </select>
+                    <select id="studentSort">
+                        <option value="email">Sort by email</option>
+                        <option value="marks-desc">Marks: high to low</option>
+                        <option value="failures-desc">Failures: high to low</option>
+                        <option value="activity-desc">Most recent activity</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Registration</th>
+                            <th>Marks</th>
+                            <th>Completed</th>
+                            <th>Failures</th>
+                            <th>Active task</th>
+                            <th>Last activity</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="studentRows"></tbody>
+                    </table>
+                </div>
+                <div id="studentEmpty" class="empty" hidden>No students match these filters.</div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Task analytics</h2>
+                    <span class="muted">Passes and failures recorded during grading</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Students attempted</th>
+                            <th>Attempts</th>
+                            <th>Passes</th>
+                            <th>Failures</th>
+                            <th>Completion rate</th>
+                        </tr>
+                        </thead>
+                        <tbody id="taskRows"></tbody>
+                    </table>
+                </div>
+                <div id="taskEmpty" class="empty" hidden>No task attempts recorded yet.</div>
             </section>
         </div>
 
-        <nav class="navigation" aria-label="Administration navigation">
-            <a href="index.html" class="link-button">Back to Game</a>
-            <a href="pass-task.html" class="link-button">Player Progress</a>
-            <a href="/.auth/logout?post_logout_redirect_uri=/"
-               class="link-button">Log out</a>
-        </nav>
-    </main>
+        <section class="support-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>AI message cache</h2>
+                    <button id="reloadCache">Reload</button>
+                </div>
+                <div class="grid">
+                    <div class="metric"><span>Messages</span><strong id="totalMessages">-</strong></div>
+                    <div class="metric"><span>Hits</span><strong id="totalHits">-</strong></div>
+                    <div class="metric"><span>Hit rate</span><strong id="hitRate">-</strong></div>
+                    <div class="metric"><span>Unused</span><strong id="unusedMessages">-</strong></div>
+                </div>
+                <div class="toolbar" style="margin-top:14px">
+                    <button id="refreshCache">Refresh generated messages</button>
+                    <button id="resetCounters">Reset hit counters</button>
+                </div>
+            </div>
 
-    <script>
-        const elements = {
-            message: document.getElementById('message'),
-            loading: document.getElementById('loading'),
-            accessDenied: document.getElementById('accessDenied'),
-            dashboard: document.getElementById('dashboard'),
-            operatorEmail: document.getElementById('operatorEmail'),
-            totalMessages: document.getElementById('totalMessages'),
-            totalHits: document.getElementById('totalHits'),
-            hitRate: document.getElementById('hitRate'),
-            unusedMessages: document.getElementById('unusedMessages'),
-            registrationResult: document.getElementById('registrationResult'),
-            registrationEmail: document.getElementById('registrationEmail'),
-            registrationStatus: document.getElementById('registrationStatus'),
-            subscriptionRow: document.getElementById('subscriptionRow'),
-            registrationSubscription:
-                document.getElementById('registrationSubscription'),
-            releaseRegistration:
-                document.getElementById('releaseRegistration'),
-            studentEmail: document.getElementById('studentEmail')
-        };
+            <div class="panel">
+                <h2>Registration support</h2>
+                <p>Look up or release one exact student registration.</p>
+                <form id="registrationLookup" class="toolbar">
+                    <input id="registrationEmail" type="email" required class="grow"
+                           placeholder="student@example.com">
+                    <button type="submit">Look up</button>
+                </form>
+                <div id="registrationResult" hidden>
+                    <p><strong id="registrationResultEmail"></strong></p>
+                    <p>Status: <span id="registrationStatus"></span></p>
+                    <p id="subscriptionRow">Subscription: <code id="registrationSubscription"></code></p>
+                    <button id="releaseRegistration" class="danger">Release registration</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
 
-        let currentRegistration = null;
+<dialog id="studentDialog">
+    <div class="panel-header">
+        <h2 id="detailEmail">Student detail</h2>
+        <button id="closeDetail">Close</button>
+    </div>
+    <div id="detailSummary" class="detail-grid"></div>
+    <h3>Passed tests</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Test</th><th>Task</th><th>NPC</th><th>Mark</th><th>Passed</th></tr></thead>
+            <tbody id="detailPassRows"></tbody>
+        </table>
+    </div>
+    <h3 style="margin-top:18px">Recent failed attempts</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Test</th><th>Task</th><th>NPC</th><th>Failed</th></tr></thead>
+            <tbody id="detailFailRows"></tbody>
+        </table>
+    </div>
+</dialog>
 
-        function showMessage(message, type = 'success') {
-            elements.message.className = `message ${type}`;
-            elements.message.textContent = message;
-            elements.message.style.display = 'block';
+<script>
+    const state = {
+        classes: [],
+        classId: '',
+        performance: null,
+        currentRegistration: null
+    };
+    const $ = id => document.getElementById(id);
+
+    function showMessage(message, type = 'success') {
+        $('message').textContent = message;
+        $('message').className = `message ${type === 'error' ? 'error' : ''}`;
+        $('message').style.display = 'block';
+    }
+    function clearMessage() { $('message').style.display = 'none'; }
+    function formatDate(value) {
+        return value ? new Date(value).toLocaleString() : 'Never';
+    }
+    function setBusy(button, busy) {
+        button.disabled = busy;
+        button.dataset.label ||= button.textContent;
+        button.textContent = busy ? 'Working...' : button.dataset.label;
+    }
+    async function requestJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const text = await response.text();
+        let body = {};
+        if (text) {
+            try { body = JSON.parse(text); }
+            catch { throw new Error(`Unexpected server response (${response.status}).`); }
         }
-
-        function clearMessage() {
-            elements.message.style.display = 'none';
+        if (!response.ok || body.success === false) {
+            const error = new Error(body.error || `Request failed (${response.status}).`);
+            error.status = response.status;
+            throw error;
         }
-
-        async function requestJson(url, options = {}) {
-            const response = await fetch(url, options);
-            const text = await response.text();
-            let body = {};
-            if (text) {
-                try {
-                    body = JSON.parse(text);
-                } catch {
-                    throw new Error(`Unexpected server response (${response.status}).`);
-                }
+        return body;
+    }
+    function query(parameters) {
+        return new URLSearchParams(parameters).toString();
+    }
+    async function loadClasses(preferredClassId = state.classId) {
+        const body = await requestJson('/api/teacher/classes');
+        state.classes = body.data.classes || [];
+        const select = $('classSelect');
+        select.replaceChildren(new Option('Create or select a class', ''));
+        for (const item of state.classes.sort((a, b) => a.name.localeCompare(b.name))) {
+            select.add(new Option(`${item.name} (${item.studentCount})`, item.id));
+        }
+        state.classId = state.classes.some(item => item.id === preferredClassId)
+            ? preferredClassId
+            : '';
+        select.value = state.classId;
+        updateClassSelection();
+    }
+    function updateClassSelection() {
+        const selected = state.classes.find(item => item.id === state.classId);
+        $('deleteClass').disabled = !selected;
+        $('rosterControls').hidden = !selected;
+        $('performanceSections').hidden = !selected;
+        if (!selected) {
+            state.performance = null;
+            return;
+        }
+        $('performanceTitle').textContent = `${selected.name} overview`;
+        loadPerformance().catch(error => showMessage(error.message, 'error'));
+    }
+    async function loadPerformance() {
+        if (!state.classId) return;
+        const body = await requestJson(
+            `/api/teacher/performance?${query({ classId: state.classId })}`);
+        state.performance = body.data;
+        const overview = body.data.overview;
+        for (const key of [
+            'totalStudents', 'registeredStudents', 'activeStudents',
+            'averageMarks', 'completedTasks', 'failedAttempts'
+        ]) {
+            $(key).textContent = overview[key] ?? 0;
+        }
+        renderStudents();
+        renderTasks();
+    }
+    function filteredStudents() {
+        if (!state.performance) return [];
+        const search = $('studentSearch').value.trim().toLowerCase();
+        const registration = $('registrationFilter').value;
+        const activity = $('activityFilter').value;
+        const students = state.performance.students.filter(student => {
+            const task = student.activeTask?.taskName || '';
+            return (!search || student.email.includes(search) || task.toLowerCase().includes(search)) &&
+                (registration === 'all' ||
+                    (registration === 'registered') === student.registered) &&
+                (activity === 'all' ||
+                    (activity === 'active') === Boolean(student.activeTask));
+        });
+        const sort = $('studentSort').value;
+        students.sort((a, b) => {
+            if (sort === 'marks-desc') return b.totalMarks - a.totalMarks;
+            if (sort === 'failures-desc') return b.failedAttemptCount - a.failedAttemptCount;
+            if (sort === 'activity-desc') {
+                return new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0);
             }
-            if (!response.ok || body.success === false) {
-                const error = new Error(
-                    body.error || `Request failed (${response.status}).`);
-                error.status = response.status;
-                throw error;
-            }
-            return body;
+            return a.email.localeCompare(b.email);
+        });
+        return students;
+    }
+    function cell(row, value) {
+        const td = row.insertCell();
+        td.textContent = value;
+        return td;
+    }
+    function renderStudents() {
+        const rows = $('studentRows');
+        rows.replaceChildren();
+        const students = filteredStudents();
+        $('studentEmpty').hidden = students.length > 0;
+        for (const student of students) {
+            const row = rows.insertRow();
+            cell(row, student.email);
+            const registration = cell(row, student.registered ? 'Registered' : 'Not registered');
+            registration.firstChild && (registration.className = '');
+            cell(row, student.totalMarks);
+            cell(row, student.completedTaskCount);
+            cell(row, student.failedAttemptCount);
+            cell(row, student.activeTask?.taskName || 'None');
+            cell(row, formatDate(student.lastActivity));
+            const actions = row.insertCell();
+            const detail = document.createElement('button');
+            detail.textContent = 'Detail';
+            detail.addEventListener('click', () => showStudentDetail(student.email));
+            const remove = document.createElement('button');
+            remove.textContent = 'Remove';
+            remove.className = 'danger';
+            remove.addEventListener('click', () => removeStudent(student.email));
+            actions.append(detail, ' ', remove);
         }
-
-        async function loadCacheStats() {
-            const body = await requestJson('/api/teacher/cache-stats');
-            const total = body.statistics?.total || {};
-            elements.totalMessages.textContent = total.messages ?? 0;
-            elements.totalHits.textContent = total.hits ?? 0;
-            elements.hitRate.textContent =
-                `${Math.round((total.hitRate || 0) * 100)}%`;
-            elements.unusedMessages.textContent = total.unusedMessages ?? 0;
+    }
+    function renderTasks() {
+        const rows = $('taskRows');
+        rows.replaceChildren();
+        const tasks = state.performance?.tasks || [];
+        $('taskEmpty').hidden = tasks.length > 0;
+        for (const task of tasks) {
+            const row = rows.insertRow();
+            cell(row, task.name);
+            cell(row, task.studentsAttempted);
+            cell(row, task.attempts);
+            cell(row, task.passes);
+            cell(row, task.failures);
+            cell(row, `${Math.round(task.completionRate * 100)}%`);
         }
-
-        async function runCacheAction(url, confirmation, successMessage) {
-            if (!window.confirm(confirmation)) {
-                return;
-            }
-            clearMessage();
-            await requestJson(url, { method: 'POST' });
-            showMessage(successMessage);
-            await loadCacheStats();
+    }
+    async function showStudentDetail(email) {
+        clearMessage();
+        const body = await requestJson(
+            `/api/teacher/student?${query({ classId: state.classId, email })}`);
+        const data = body.data;
+        const student = data.student;
+        $('detailEmail').textContent = student.email;
+        $('detailSummary').replaceChildren();
+        const summary = [
+            ['Registration', student.registered ? 'Registered' : 'Not registered'],
+            ['Subscription', student.subscriptionId || 'None'],
+            ['Marks', student.totalMarks],
+            ['Completed tasks', student.completedTaskCount],
+            ['Failed attempts', student.failedAttemptCount],
+            ['Active task', student.activeTask?.taskName || 'None'],
+            ['Last activity', formatDate(student.lastActivity)]
+        ];
+        for (const [label, value] of summary) {
+            const item = document.createElement('div');
+            item.className = 'metric';
+            const span = document.createElement('span');
+            span.textContent = label;
+            const strong = document.createElement('strong');
+            strong.textContent = value;
+            item.append(span, strong);
+            $('detailSummary').append(item);
         }
-
-        async function lookupRegistration(email) {
-            const normalizedEmail = email.trim().toLowerCase();
+        const passRows = $('detailPassRows');
+        passRows.replaceChildren();
+        for (const item of data.passedTests) {
+            const row = passRows.insertRow();
+            [item.testName, item.taskName, item.assignedByNpc, item.mark,
+                formatDate(item.passedAt)].forEach(value => cell(row, value));
+        }
+        const failRows = $('detailFailRows');
+        failRows.replaceChildren();
+        for (const item of data.failedAttempts) {
+            const row = failRows.insertRow();
+            [item.testName, item.taskName, item.assignedByNpc,
+                formatDate(item.failedAt)].forEach(value => cell(row, value));
+        }
+        $('studentDialog').showModal();
+    }
+    async function removeStudent(email) {
+        if (!confirm(`Remove ${email} from this class? Progress and registration are preserved.`)) return;
+        await requestJson(
+            `/api/teacher/roster?${query({ classId: state.classId, email })}`,
+            { method: 'DELETE' });
+        showMessage(`Removed ${email} from the class.`);
+        await loadClasses(state.classId);
+    }
+    function parseRoster(text) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return [...new Set(text
+            .split(/[\r\n,;|\t]+/)
+            .map(value => value.trim().replace(/^"|"$/g, '').toLowerCase())
+            .filter(value => emailPattern.test(value)))];
+    }
+    async function importRoster() {
+        const file = $('rosterFile').files[0];
+        if (!file) throw new Error('Select a CSV file first.');
+        const emails = parseRoster(await file.text());
+        if (!emails.length) throw new Error('The CSV contains no valid email addresses.');
+        let imported = 0;
+        for (let index = 0; index < emails.length; index += 50) {
+            const batch = emails.slice(index, index + 50);
             const body = await requestJson(
-                `/api/teacher/registration?email=${encodeURIComponent(normalizedEmail)}`);
-            currentRegistration = body.data;
-            elements.registrationResult.hidden = false;
-            elements.registrationEmail.textContent = body.data.email;
-            elements.registrationStatus.textContent = body.data.registered
-                ? 'Registered'
-                : 'Not registered';
-            elements.subscriptionRow.hidden = !body.data.registered;
-            elements.releaseRegistration.hidden = !body.data.registered;
-            elements.registrationSubscription.textContent =
-                body.data.subscriptionId || '';
+                `/api/teacher/roster?${query({
+                    classId: state.classId,
+                    emails: batch.join('|')
+                })}`,
+                { method: 'POST' });
+            imported += body.data.imported;
         }
-
-        async function initialize() {
-            try {
-                const status = await requestJson('/api/teacher/status');
-                elements.operatorEmail.textContent = status.data.email;
-                elements.dashboard.hidden = false;
-                await loadCacheStats();
-            } catch (error) {
-                if (error.status === 403) {
-                    elements.accessDenied.hidden = false;
-                } else {
-                    showMessage(
-                        error.message || 'Failed to load administration page.',
-                        'error');
-                }
-            } finally {
-                elements.loading.hidden = true;
-            }
+        $('rosterFile').value = '';
+        showMessage(`Imported ${imported} unique student emails.`);
+        await loadClasses(state.classId);
+    }
+    function csvValue(value) {
+        const text = value == null ? '' : String(value);
+        return `"${text.replaceAll('"', '""')}"`;
+    }
+    function exportStudents() {
+        const headings = [
+            'Email', 'Registered', 'Subscription ID', 'Marks',
+            'Completed Tasks', 'Failed Attempts', 'Active Task', 'Last Activity'
+        ];
+        const rows = filteredStudents().map(student => [
+            student.email,
+            student.registered ? 'Yes' : 'No',
+            student.subscriptionId || '',
+            student.totalMarks,
+            student.completedTaskCount,
+            student.failedAttemptCount,
+            student.activeTask?.taskName || '',
+            student.lastActivity || ''
+        ]);
+        const csv = [headings, ...rows]
+            .map(row => row.map(csvValue).join(','))
+            .join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        const className = state.performance?.class?.name || 'class';
+        anchor.href = url;
+        anchor.download = `${className.replaceAll(/[^a-z0-9]+/gi, '-')}-performance.csv`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    }
+    async function loadCacheStats() {
+        const body = await requestJson('/api/teacher/cache-stats');
+        const total = body.statistics?.total || {};
+        $('totalMessages').textContent = total.messages ?? 0;
+        $('totalHits').textContent = total.hits ?? 0;
+        $('hitRate').textContent = `${Math.round((total.hitRate || 0) * 100)}%`;
+        $('unusedMessages').textContent = total.unusedMessages ?? 0;
+    }
+    async function runCacheAction(url, confirmation, successMessage) {
+        if (!confirm(confirmation)) return;
+        await requestJson(url, { method: 'POST' });
+        showMessage(successMessage);
+        await loadCacheStats();
+    }
+    async function lookupRegistration(email) {
+        const normalizedEmail = email.trim().toLowerCase();
+        const body = await requestJson(
+            `/api/teacher/registration?email=${encodeURIComponent(normalizedEmail)}`);
+        state.currentRegistration = body.data;
+        $('registrationResult').hidden = false;
+        $('registrationResultEmail').textContent = body.data.email;
+        $('registrationStatus').textContent = body.data.registered
+            ? 'Registered'
+            : 'Not registered';
+        $('subscriptionRow').hidden = !body.data.registered;
+        $('releaseRegistration').hidden = !body.data.registered;
+        $('registrationSubscription').textContent = body.data.subscriptionId || '';
+    }
+    async function initialize() {
+        try {
+            const status = await requestJson('/api/teacher/status');
+            $('operatorEmail').textContent = status.data.email;
+            $('dashboard').hidden = false;
+            await Promise.all([loadClasses(), loadCacheStats()]);
+        } catch (error) {
+            if (error.status === 403) $('accessDenied').hidden = false;
+            else showMessage(error.message, 'error');
         }
+    }
 
-        document.getElementById('reloadStats').addEventListener('click', async () => {
-            try {
-                clearMessage();
-                await loadCacheStats();
-                showMessage('Cache statistics reloaded.');
-            } catch (error) {
-                showMessage(error.message, 'error');
-            }
-        });
+    $('classSelect').addEventListener('change', event => {
+        state.classId = event.target.value;
+        updateClassSelection();
+    });
+    $('refreshClasses').addEventListener('click', () =>
+        loadClasses().catch(error => showMessage(error.message, 'error')));
+    $('createClass').addEventListener('click', async event => {
+        try {
+            setBusy(event.currentTarget, true);
+            const name = $('newClassName').value.trim();
+            const body = await requestJson(
+                `/api/teacher/classes?${query({ name })}`,
+                { method: 'POST' });
+            $('newClassName').value = '';
+            showMessage(`Created class ${body.data.name}.`);
+            await loadClasses(body.data.id);
+        } catch (error) { showMessage(error.message, 'error'); }
+        finally { setBusy(event.currentTarget, false); }
+    });
+    $('deleteClass').addEventListener('click', async () => {
+        const selected = state.classes.find(item => item.id === state.classId);
+        if (!selected || !confirm(`Delete ${selected.name} and its roster? Student progress is preserved.`)) return;
+        try {
+            await requestJson(
+                `/api/teacher/classes?${query({ classId: state.classId })}`,
+                { method: 'DELETE' });
+            showMessage(`Deleted class ${selected.name}.`);
+            state.classId = '';
+            await loadClasses();
+        } catch (error) { showMessage(error.message, 'error'); }
+    });
+    $('importRoster').addEventListener('click', async event => {
+        try { setBusy(event.currentTarget, true); await importRoster(); }
+        catch (error) { showMessage(error.message, 'error'); }
+        finally { setBusy(event.currentTarget, false); }
+    });
+    $('refreshPerformance').addEventListener('click', () =>
+        loadPerformance().catch(error => showMessage(error.message, 'error')));
+    ['studentSearch', 'registrationFilter', 'activityFilter', 'studentSort']
+        .forEach(id => $(id).addEventListener(id === 'studentSearch' ? 'input' : 'change', renderStudents));
+    $('exportStudents').addEventListener('click', exportStudents);
+    $('closeDetail').addEventListener('click', () => $('studentDialog').close());
+    $('reloadCache').addEventListener('click', () =>
+        loadCacheStats().catch(error => showMessage(error.message, 'error')));
+    $('refreshCache').addEventListener('click', () =>
+        runCacheAction(
+            '/api/teacher/cache-refresh',
+            'Refresh generated messages? This can consume Azure OpenAI quota.',
+            'Message refresh completed.')
+            .catch(error => showMessage(error.message, 'error')));
+    $('resetCounters').addEventListener('click', () =>
+        runCacheAction(
+            '/api/teacher/cache-reset',
+            'Reset every message hit counter to zero?',
+            'Message hit counters reset.')
+            .catch(error => showMessage(error.message, 'error')));
+    $('registrationLookup').addEventListener('submit', async event => {
+        event.preventDefault();
+        try { await lookupRegistration($('registrationEmail').value); }
+        catch (error) { showMessage(error.message, 'error'); }
+    });
+    $('releaseRegistration').addEventListener('click', async () => {
+        const registration = state.currentRegistration;
+        if (!registration?.registered) return;
+        const confirmation = prompt(`Type ${registration.email} to release this registration.`);
+        if (confirmation?.trim().toLowerCase() !== registration.email) {
+            showMessage('Registration release cancelled.', 'error');
+            return;
+        }
+        try {
+            await requestJson(
+                `/api/teacher/registration?email=${encodeURIComponent(registration.email)}`,
+                { method: 'DELETE' });
+            showMessage(`Released registration for ${registration.email}.`);
+            await lookupRegistration(registration.email);
+            if (state.classId) await loadPerformance();
+        } catch (error) { showMessage(error.message, 'error'); }
+    });
 
-        document.getElementById('refreshCache').addEventListener('click', async () => {
-            try {
-                await runCacheAction(
-                    '/api/teacher/cache-refresh',
-                    'Refresh all generated messages? This can consume Azure OpenAI quota.',
-                    'Message refresh completed.');
-            } catch (error) {
-                showMessage(error.message, 'error');
-            }
-        });
-
-        document.getElementById('resetCounters').addEventListener('click', async () => {
-            try {
-                await runCacheAction(
-                    '/api/teacher/cache-reset',
-                    'Reset every message hit counter to zero?',
-                    'Message hit counters reset.');
-            } catch (error) {
-                showMessage(error.message, 'error');
-            }
-        });
-
-        document.getElementById('registrationLookup').addEventListener(
-            'submit',
-            async event => {
-                event.preventDefault();
-                try {
-                    clearMessage();
-                    await lookupRegistration(elements.studentEmail.value);
-                } catch (error) {
-                    showMessage(error.message, 'error');
-                }
-            });
-
-        elements.releaseRegistration.addEventListener('click', async () => {
-            if (!currentRegistration?.registered) {
-                return;
-            }
-            const confirmation = window.prompt(
-                `Type ${currentRegistration.email} to release this registration.`);
-            if (confirmation?.trim().toLowerCase() !== currentRegistration.email) {
-                showMessage('Registration release cancelled.', 'error');
-                return;
-            }
-
-            try {
-                clearMessage();
-                await requestJson(
-                    `/api/teacher/registration?email=${encodeURIComponent(currentRegistration.email)}`,
-                    { method: 'DELETE' });
-                showMessage(
-                    `Released registration for ${currentRegistration.email}.`);
-                await lookupRegistration(currentRegistration.email);
-            } catch (error) {
-                showMessage(error.message, 'error');
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', initialize);
-    </script>
+    initialize();
+</script>
 </body>
 </html>

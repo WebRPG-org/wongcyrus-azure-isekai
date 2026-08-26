@@ -21,6 +21,43 @@ const operations = {
     registration: {
         methods: ['GET', 'DELETE'],
         setting: 'StudentRegistrationAdminFunctionUrl'
+    },
+    classes: {
+        methods: ['GET', 'POST', 'DELETE'],
+        setting: 'ClassPerformanceAdminFunctionUrl',
+        actions: {
+            GET: 'classes',
+            POST: 'class',
+            DELETE: 'class'
+        },
+        parameters: {
+            POST: ['name'],
+            DELETE: ['classId']
+        }
+    },
+    roster: {
+        methods: ['POST', 'DELETE'],
+        setting: 'ClassPerformanceAdminFunctionUrl',
+        actions: {
+            POST: 'roster',
+            DELETE: 'member'
+        },
+        parameters: {
+            POST: ['classId', 'emails'],
+            DELETE: ['classId', 'email']
+        }
+    },
+    performance: {
+        method: 'GET',
+        setting: 'ClassPerformanceAdminFunctionUrl',
+        actions: { GET: 'performance' },
+        parameters: { GET: ['classId'] }
+    },
+    student: {
+        method: 'GET',
+        setting: 'ClassPerformanceAdminFunctionUrl',
+        actions: { GET: 'student' },
+        parameters: { GET: ['classId', 'email'] }
     }
 };
 
@@ -53,13 +90,22 @@ async function proxyOperation(request, context, email, operation) {
         return errorResponse(500, 'Admin backend is not configured.');
     }
 
-    const parameters = {};
+    const parameters = configuration.actions
+        ? { action: configuration.actions[method] }
+        : {};
     if (operation === 'registration') {
         const studentEmail = request.query.get('email')?.trim();
         if (!studentEmail) {
             return errorResponse(400, 'A student email is required.');
         }
         parameters.email = studentEmail;
+    }
+    for (const name of configuration.parameters?.[method] || []) {
+        const value = request.query.get(name)?.trim();
+        if (!value) {
+            return errorResponse(400, `${name} is required.`);
+        }
+        parameters[name] = value;
     }
 
     const backendRequest = createSignedBackendRequest(
@@ -116,7 +162,12 @@ async function handleAdmin(request, context) {
                         'cache-refresh',
                         'cache-counter-reset',
                         'registration-lookup',
-                        'registration-release'
+                        'registration-release',
+                        'class-roster-management',
+                        'class-performance',
+                        'task-analytics',
+                        'student-detail',
+                        'csv-import-export'
                     ]
                 }
             }

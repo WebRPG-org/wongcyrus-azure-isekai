@@ -91,7 +91,7 @@ test('cache statistics are proxied with signed operator identity', async () => {
 
 test('registration release forwards exact student email', async () => {
     process.env.StudentRegistrationAdminFunctionUrl =
-        'https://example.test/api/admin/subscription-registration?code=admin-key';
+        'https://example.test/api/operator/subscription-registration?code=admin-key';
     const request = createRequest('registration', 'DELETE');
     request.query.set('email', ' Student@Example.com ');
     const originalFetch = global.fetch;

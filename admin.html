@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure Isekai - Teacher Administration</title>
+    <link rel="icon" href="icon/icon.png" type="image/png">
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #344054, #101828);
+            color: #1d2939;
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+            margin: 0 auto;
+            max-width: 1050px;
+            padding: 32px;
+        }
+
+        h1,
+        h2,
+        p {
+            margin-top: 0;
+        }
+
+        header {
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            margin-bottom: 8px;
+        }
+
+        .muted {
+            color: #667085;
+        }
+
+        .message {
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 20px;
+            padding: 14px 16px;
+        }
+
+        .error {
+            background: #fef3f2;
+            border: 1px solid #fecdca;
+            color: #b42318;
+        }
+
+        .success {
+            background: #ecfdf3;
+            border: 1px solid #abefc6;
+            color: #067647;
+        }
+
+        .section {
+            border: 1px solid #e4e7ec;
+            border-radius: 12px;
+            margin-bottom: 22px;
+            padding: 22px;
+        }
+
+        .section.warning {
+            background: #fffcf5;
+            border-color: #fec84b;
+        }
+
+        .grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+
+        .stat {
+            background: #f2f4f7;
+            border-radius: 9px;
+            padding: 16px;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.7rem;
+            margin-bottom: 4px;
+        }
+
+        .label {
+            color: #667085;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .actions,
+        .navigation,
+        form {
+            align-items: end;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        label {
+            display: block;
+            flex: 1 1 320px;
+            font-weight: 650;
+        }
+
+        input {
+            border: 1px solid #98a2b3;
+            border-radius: 7px;
+            display: block;
+            font: inherit;
+            margin-top: 7px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        button,
+        .link-button {
+            border: 0;
+            border-radius: 7px;
+            cursor: pointer;
+            display: inline-block;
+            font: inherit;
+            font-weight: 650;
+            padding: 11px 18px;
+            text-decoration: none;
+        }
+
+        button {
+            background: #1570ef;
+            color: white;
+        }
+
+        button.secondary,
+        .link-button {
+            background: #475467;
+            color: white;
+        }
+
+        button.danger {
+            background: #d92d20;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .registration-result {
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-top: 16px;
+            padding: 16px;
+        }
+
+        .registration-result[hidden],
+        #dashboard[hidden],
+        #accessDenied[hidden] {
+            display: none;
+        }
+
+        .value {
+            font-family: "Courier New", monospace;
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 620px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Teacher Administration</h1>
+            <p class="muted">
+                Operator-only grading controls and student registration support
+            </p>
+        </header>
+
+        <div id="message" class="message" role="status"></div>
+        <p id="loading" class="muted">Checking operator access...</p>
+
+        <section id="accessDenied" class="section warning" hidden>
+            <h2>Operator access required</h2>
+            <p>
+                Your signed-in account is not in the grading Function's
+                operator allowlist.
+            </p>
+        </section>
+
+        <div id="dashboard" hidden>
+            <section class="section">
+                <h2>Operator Session</h2>
+                <span class="label">Signed-in operator</span>
+                <div id="operatorEmail" class="value"></div>
+            </section>
+
+            <section class="section">
+                <h2>AI Message Cache</h2>
+                <div class="grid">
+                    <div class="stat">
+                        <strong id="totalMessages">-</strong>
+                        <span>Total messages</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="totalHits">-</strong>
+                        <span>Total hits</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="hitRate">-</strong>
+                        <span>Hit rate</span>
+                    </div>
+                    <div class="stat">
+                        <strong id="unusedMessages">-</strong>
+                        <span>Unused messages</span>
+                    </div>
+                </div>
+                <div class="actions" style="margin-top: 16px;">
+                    <button id="reloadStats" type="button">Reload statistics</button>
+                    <button id="refreshCache" class="secondary" type="button">
+                        Refresh generated messages
+                    </button>
+                    <button id="resetCounters" class="danger" type="button">
+                        Reset hit counters
+                    </button>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Student Subscription Registration</h2>
+                <p class="muted">
+                    Look up one student by exact email. Releasing registration
+                    preserves Azure access, tags, progress, reports, and results.
+                </p>
+                <form id="registrationLookup">
+                    <label for="studentEmail">
+                        Student email
+                        <input id="studentEmail" type="email" required
+                               placeholder="student@example.com">
+                    </label>
+                    <button type="submit">Look up registration</button>
+                </form>
+                <div id="registrationResult" class="registration-result" hidden>
+                    <div>
+                        <span class="label">Student</span>
+                        <div id="registrationEmail" class="value"></div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <span class="label">Status</span>
+                        <div id="registrationStatus"></div>
+                    </div>
+                    <div id="subscriptionRow" style="margin-top: 12px;" hidden>
+                        <span class="label">Subscription ID</span>
+                        <div id="registrationSubscription" class="value"></div>
+                    </div>
+                    <button id="releaseRegistration" class="danger"
+                            style="margin-top: 16px;" type="button" hidden>
+                        Release registration
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <nav class="navigation" aria-label="Administration navigation">
+            <a href="index.html" class="link-button">Back to Game</a>
+            <a href="pass-task.html" class="link-button">Player Progress</a>
+            <a href="/.auth/logout?post_logout_redirect_uri=/"
+               class="link-button">Log out</a>
+        </nav>
+    </main>
+
+    <script>
+        const elements = {
+            message: document.getElementById('message'),
+            loading: document.getElementById('loading'),
+            accessDenied: document.getElementById('accessDenied'),
+            dashboard: document.getElementById('dashboard'),
+            operatorEmail: document.getElementById('operatorEmail'),
+            totalMessages: document.getElementById('totalMessages'),
+            totalHits: document.getElementById('totalHits'),
+            hitRate: document.getElementById('hitRate'),
+            unusedMessages: document.getElementById('unusedMessages'),
+            registrationResult: document.getElementById('registrationResult'),
+            registrationEmail: document.getElementById('registrationEmail'),
+            registrationStatus: document.getElementById('registrationStatus'),
+            subscriptionRow: document.getElementById('subscriptionRow'),
+            registrationSubscription:
+                document.getElementById('registrationSubscription'),
+            releaseRegistration:
+                document.getElementById('releaseRegistration'),
+            studentEmail: document.getElementById('studentEmail')
+        };
+
+        let currentRegistration = null;
+
+        function showMessage(message, type = 'success') {
+            elements.message.className = `message ${type}`;
+            elements.message.textContent = message;
+            elements.message.style.display = 'block';
+        }
+
+        function clearMessage() {
+            elements.message.style.display = 'none';
+        }
+
+        async function requestJson(url, options = {}) {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            let body = {};
+            if (text) {
+                try {
+                    body = JSON.parse(text);
+                } catch {
+                    throw new Error(`Unexpected server response (${response.status}).`);
+                }
+            }
+            if (!response.ok || body.success === false) {
+                const error = new Error(
+                    body.error || `Request failed (${response.status}).`);
+                error.status = response.status;
+                throw error;
+            }
+            return body;
+        }
+
+        async function loadCacheStats() {
+            const body = await requestJson('/api/admin/cache-stats');
+            const total = body.statistics?.total || {};
+            elements.totalMessages.textContent = total.messages ?? 0;
+            elements.totalHits.textContent = total.hits ?? 0;
+            elements.hitRate.textContent =
+                `${Math.round((total.hitRate || 0) * 100)}%`;
+            elements.unusedMessages.textContent = total.unusedMessages ?? 0;
+        }
+
+        async function runCacheAction(url, confirmation, successMessage) {
+            if (!window.confirm(confirmation)) {
+                return;
+            }
+            clearMessage();
+            await requestJson(url, { method: 'POST' });
+            showMessage(successMessage);
+            await loadCacheStats();
+        }
+
+        async function lookupRegistration(email) {
+            const normalizedEmail = email.trim().toLowerCase();
+            const body = await requestJson(
+                `/api/admin/registration?email=${encodeURIComponent(normalizedEmail)}`);
+            currentRegistration = body.data;
+            elements.registrationResult.hidden = false;
+            elements.registrationEmail.textContent = body.data.email;
+            elements.registrationStatus.textContent = body.data.registered
+                ? 'Registered'
+                : 'Not registered';
+            elements.subscriptionRow.hidden = !body.data.registered;
+            elements.releaseRegistration.hidden = !body.data.registered;
+            elements.registrationSubscription.textContent =
+                body.data.subscriptionId || '';
+        }
+
+        async function initialize() {
+            try {
+                const status = await requestJson('/api/admin/status');
+                elements.operatorEmail.textContent = status.data.email;
+                elements.dashboard.hidden = false;
+                await loadCacheStats();
+            } catch (error) {
+                if (error.status === 403) {
+                    elements.accessDenied.hidden = false;
+                } else {
+                    showMessage(
+                        error.message || 'Failed to load administration page.',
+                        'error');
+                }
+            } finally {
+                elements.loading.hidden = true;
+            }
+        }
+
+        document.getElementById('reloadStats').addEventListener('click', async () => {
+            try {
+                clearMessage();
+                await loadCacheStats();
+                showMessage('Cache statistics reloaded.');
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        document.getElementById('refreshCache').addEventListener('click', async () => {
+            try {
+                await runCacheAction(
+                    '/api/admin/cache-refresh',
+                    'Refresh all generated messages? This can consume Azure OpenAI quota.',
+                    'Message refresh completed.');
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        document.getElementById('resetCounters').addEventListener('click', async () => {
+            try {
+                await runCacheAction(
+                    '/api/admin/cache-reset',
+                    'Reset every message hit counter to zero?',
+                    'Message hit counters reset.');
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        document.getElementById('registrationLookup').addEventListener(
+            'submit',
+            async event => {
+                event.preventDefault();
+                try {
+                    clearMessage();
+                    await lookupRegistration(elements.studentEmail.value);
+                } catch (error) {
+                    showMessage(error.message, 'error');
+                }
+            });
+
+        elements.releaseRegistration.addEventListener('click', async () => {
+            if (!currentRegistration?.registered) {
+                return;
+            }
+            const confirmation = window.prompt(
+                `Type ${currentRegistration.email} to release this registration.`);
+            if (confirmation?.trim().toLowerCase() !== currentRegistration.email) {
+                showMessage('Registration release cancelled.', 'error');
+                return;
+            }
+
+            try {
+                clearMessage();
+                await requestJson(
+                    `/api/admin/registration?email=${encodeURIComponent(currentRegistration.email)}`,
+                    { method: 'DELETE' });
+                showMessage(
+                    `Released registration for ${currentRegistration.email}.`);
+                await lookupRegistration(currentRegistration.email);
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

@@ -10,11 +10,17 @@ This repository contains:
 - Microsoft Entra sign-in routes for Azure Static Web Apps;
 - server-side Azure Functions proxies under `api/`;
 - subscription registration and player-progress pages.
+- an operator-only teacher dashboard at `admin.html`.
 
 The browser never receives backend Function keys or chooses the grading
 identity. The Static Web Apps API derives the signed-in email from the trusted
 client principal and sends a short-lived signed assertion to the grading
 Function.
+
+The teacher dashboard requires the signed-in address in the server-side
+`ADMIN_EMAILS` allowlist at both the proxy and backend. It provides controlled
+message-cache operations and exact student registration lookup/release without
+exposing backend keys or unrestricted student browsing.
 
 
 ## Demo

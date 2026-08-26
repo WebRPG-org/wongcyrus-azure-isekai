@@ -3,7 +3,8 @@ const crypto = require('node:crypto');
 const test = require('node:test');
 const {
     createSignedBackendRequest,
-    getAuthenticatedEmail
+    getAuthenticatedEmail,
+    isOperatorEmail
 } = require('../src/shared/proxy-security');
 
 test('authenticated principal email is normalized', () => {
@@ -47,4 +48,18 @@ test('backend request moves Function key to a header and signs identity', () => 
         .update(canonical)
         .digest('hex');
     assert.equal(result.headers['x-grader-signature'], expected);
+});
+
+test('operator allowlist normalizes configured addresses', () => {
+    process.env.ADMIN_EMAILS =
+        ' First@Example.com ; second@example.com\nthird@example.com ';
+
+    assert.equal(isOperatorEmail('SECOND@example.com'), true);
+    assert.equal(isOperatorEmail('student@example.com'), false);
+});
+
+test('missing operator allowlist fails closed', () => {
+    delete process.env.ADMIN_EMAILS;
+
+    assert.equal(isOperatorEmail('operator@example.com'), false);
 });

@@ -18,6 +18,15 @@ function getAuthenticatedEmail(request, context) {
     }
 }
 
+function isOperatorEmail(email) {
+    const configuredEmails = process.env.ADMIN_EMAILS || '';
+    const operatorEmails = configuredEmails
+        .split(/[,;\r\n]/)
+        .map(value => value.trim().toLowerCase())
+        .filter(Boolean);
+    return operatorEmails.includes(email.trim().toLowerCase());
+}
+
 function createSignedBackendRequest(
     configuredUrl,
     method,
@@ -66,5 +75,6 @@ function createSignedBackendRequest(
 
 module.exports = {
     createSignedBackendRequest,
-    getAuthenticatedEmail
+    getAuthenticatedEmail,
+    isOperatorEmail
 };

@@ -60,6 +60,11 @@ Production is deployed by the grading-engine repository's
 `Infrastructure/deploy-static-web-app.sh`, which supplies the complete
 server-side settings map.
 
+The `api/` directory is deployed as the Static Web Apps managed Node API. Azure
+Portal API mapping (Bring Your Own API/linked backend) is intentionally empty;
+do not link the grading Function App directly. Production deployment verifies
+the managed API through `/api/health` and fails if it is unavailable.
+
 ## Core Developers
 
 Students from [Higher Diploma in Cloud and Data Centre Administration](https://www.vtc.edu.hk/admission/en/programme/it114115-higher-diploma-in-cloud-and-data-centre-administration/)

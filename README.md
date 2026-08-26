@@ -24,7 +24,7 @@ export filtered CSV results, and use controlled cache and registration support
 tools without exposing backend keys or unrestricted student browsing.
 
 Operational details and common questions are documented in the parent
-repository's `docs/teacher-dashboard.md` and `docs/faq.md`.
+repository's `docs/guides/teacher-dashboard.md` and `docs/faq.md`.
 
 
 ## Demo

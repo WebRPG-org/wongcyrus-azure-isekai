@@ -349,7 +349,7 @@
         }
 
         async function loadCacheStats() {
-            const body = await requestJson('/api/admin/cache-stats');
+            const body = await requestJson('/api/teacher/cache-stats');
             const total = body.statistics?.total || {};
             elements.totalMessages.textContent = total.messages ?? 0;
             elements.totalHits.textContent = total.hits ?? 0;
@@ -371,7 +371,7 @@
         async function lookupRegistration(email) {
             const normalizedEmail = email.trim().toLowerCase();
             const body = await requestJson(
-                `/api/admin/registration?email=${encodeURIComponent(normalizedEmail)}`);
+                `/api/teacher/registration?email=${encodeURIComponent(normalizedEmail)}`);
             currentRegistration = body.data;
             elements.registrationResult.hidden = false;
             elements.registrationEmail.textContent = body.data.email;
@@ -386,7 +386,7 @@
 
         async function initialize() {
             try {
-                const status = await requestJson('/api/admin/status');
+                const status = await requestJson('/api/teacher/status');
                 elements.operatorEmail.textContent = status.data.email;
                 elements.dashboard.hidden = false;
                 await loadCacheStats();
@@ -416,7 +416,7 @@
         document.getElementById('refreshCache').addEventListener('click', async () => {
             try {
                 await runCacheAction(
-                    '/api/admin/cache-refresh',
+                    '/api/teacher/cache-refresh',
                     'Refresh all generated messages? This can consume Azure OpenAI quota.',
                     'Message refresh completed.');
             } catch (error) {
@@ -427,7 +427,7 @@
         document.getElementById('resetCounters').addEventListener('click', async () => {
             try {
                 await runCacheAction(
-                    '/api/admin/cache-reset',
+                    '/api/teacher/cache-reset',
                     'Reset every message hit counter to zero?',
                     'Message hit counters reset.');
             } catch (error) {
@@ -461,7 +461,7 @@
             try {
                 clearMessage();
                 await requestJson(
-                    `/api/admin/registration?email=${encodeURIComponent(currentRegistration.email)}`,
+                    `/api/teacher/registration?email=${encodeURIComponent(currentRegistration.email)}`,
                     { method: 'DELETE' });
                 showMessage(
                     `Released registration for ${currentRegistration.email}.`);

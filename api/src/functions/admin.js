@@ -126,10 +126,10 @@ async function handleAdmin(request, context) {
     return proxyOperation(request, context, email, operation);
 }
 
-app.http('admin', {
+app.http('teacher-admin', {
     methods: ['GET', 'POST', 'DELETE'],
     authLevel: 'anonymous',
-    route: 'admin/{operation}',
+    route: 'teacher/{operation}',
     handler: handleAdmin
 });
 

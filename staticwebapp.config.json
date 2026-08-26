@@ -1,0 +1,77 @@
+{
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/8ff7db19-435d-4c3c-83d3-ca0a46234f51/v2.0",
+          "clientIdSettingName": "AADB2C_PROVIDER_CLIENT_ID",
+          "clientSecretSettingName": "AADB2C_PROVIDER_CLIENT_SECRET"
+        }
+      }
+    }
+  },
+  "navigationFallback": {
+    "rewrite": "index.html"
+  },
+  "routes": [
+    {
+      "route": "/login",
+      "redirect": "/.auth/login/aad",
+      "statusCode": 302,
+      "allowedRoles": [
+        "anonymous",
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/.auth/login/github",
+      "statusCode": 404
+    },
+    {
+      "route": "/.auth/login/twitter",
+      "statusCode": 404
+    },
+    {
+      "route": "/.auth/*",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/logout",
+      "redirect": "/.auth/logout",
+      "allowedRoles": [
+        "anonymous",
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/registration.html",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    },
+    {
+      "route": "/*",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    }
+  ],
+  "responseOverrides": {
+    "401": {
+      "redirect": "/login",
+      "statusCode": 302
+    }
+  },
+  "mimeTypes": {
+    ".json": "text/json"
+  },
+  "platform": {
+    "apiRuntime": "node:22"
+  },
+  "globalHeaders": {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS"
+  }
+}

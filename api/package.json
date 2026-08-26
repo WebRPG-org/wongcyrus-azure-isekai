@@ -4,10 +4,13 @@
   "description": "",
   "scripts": {
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "node --test"
   },
   "dependencies": {
-    "@azure/functions": "^4.7.2"
+    "@azure/functions": "^4.16.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   },
   "main": "src/{index.js,functions/*.js}"
 }

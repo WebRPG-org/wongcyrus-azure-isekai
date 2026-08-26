@@ -3,207 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azure Isekai - Completed Tasks</title>
-    <link rel="icon" href="icon/icon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="icon/icon.png" />
+    <title>Azure Isekai - Player Progress</title>
+    <link rel="icon" href="icon/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icon/icon.png">
     <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
-            padding: 20px;
             min-height: 100vh;
-        }
-        
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #333;
-            margin: 0;
-            font-size: 2.5em;
-        }
-        
-        .score-summary {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
             padding: 20px;
-            border-radius: 10px;
+            color: #243047;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.16);
+            margin: 0 auto;
+            max-width: 980px;
+            padding: 32px;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        .header {
+            margin-bottom: 28px;
             text-align: center;
-            margin-bottom: 30px;
         }
-        
-        .score-summary h2 {
-            margin: 0;
-            font-size: 2em;
+
+        .header h1 {
+            color: #252b42;
+            font-size: clamp(2rem, 5vw, 2.7rem);
+            margin-bottom: 8px;
         }
-        
-        .tasks-container {
-            margin-top: 20px;
+
+        .loading,
+        .empty {
+            color: #667085;
+            padding: 28px;
+            text-align: center;
         }
-        
-        .task-item {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+
+        .message {
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: none;
+            margin-bottom: 20px;
+            padding: 14px 16px;
         }
-        
-        .task-name {
+
+        .message.error {
+            background: #fef3f2;
+            border: 1px solid #fecdca;
+            color: #b42318;
+        }
+
+        .message.success {
+            background: #ecfdf3;
+            border: 1px solid #abefc6;
+            color: #067647;
+        }
+
+        .profile-card,
+        .section,
+        .danger-zone {
+            border: 1px solid #e4e7ec;
+            border-radius: 12px;
+            margin-bottom: 22px;
+            padding: 22px;
+        }
+
+        .profile-card {
+            background: #f8f9fc;
+        }
+
+        .profile-grid,
+        .stats-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+
+        .label {
+            color: #667085;
+            display: block;
+            font-size: 0.82rem;
             font-weight: 600;
-            color: #333;
+            letter-spacing: 0.04em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
         }
-        
-        .task-score {
-            background: #007bff;
+
+        .value {
+            overflow-wrap: anywhere;
+        }
+
+        .stat {
+            background: linear-gradient(135deg, #475467, #344054);
+            border-radius: 10px;
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        
-        .loading {
+            padding: 18px;
             text-align: center;
-            padding: 40px;
-            color: #666;
         }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
+
+        .stat strong {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+        }
+
+        .active-task {
+            background: #eff8ff;
+            border-color: #b2ddff;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .list-item {
+            align-items: center;
+            background: #f9fafb;
+            border: 1px solid #eaecf0;
             border-radius: 8px;
-            margin: 20px 0;
+            display: flex;
+            gap: 16px;
+            justify-content: space-between;
+            padding: 14px;
         }
-        
-        .no-tasks {
-            text-align: center;
-            padding: 40px;
-            color: #666;
+
+        .item-details {
+            min-width: 0;
         }
-        
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #007bff;
+
+        .item-title {
+            color: #101828;
+            display: block;
+            font-weight: 650;
+            overflow-wrap: anywhere;
+        }
+
+        .item-meta {
+            color: #667085;
+            display: block;
+            font-size: 0.88rem;
+            margin-top: 4px;
+        }
+
+        .badge {
+            background: #1570ef;
+            border-radius: 999px;
             color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            flex: none;
+            font-weight: 700;
+            padding: 6px 12px;
         }
-        
-        .back-link:hover {
-            background: #0056b3;
+
+        .danger-zone {
+            background: #fffafa;
+            border-color: #fda29b;
+        }
+
+        .danger-zone h2 {
+            color: #b42318;
+        }
+
+        button,
+        .back-link {
+            border: 0;
+            border-radius: 7px;
+            cursor: pointer;
+            display: inline-block;
+            font: inherit;
+            font-weight: 650;
+            padding: 11px 18px;
+            text-decoration: none;
+        }
+
+        .back-link,
+        .secondary-button {
+            background: #1570ef;
+            color: white;
+        }
+
+        .danger-button {
+            background: #d92d20;
+            color: white;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        dialog {
+            border: 0;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+            max-width: 520px;
+            padding: 26px;
+            width: calc(100% - 32px);
+        }
+
+        dialog::backdrop {
+            background: rgba(16, 24, 40, 0.68);
+        }
+
+        dialog input {
+            border: 1px solid #98a2b3;
+            border-radius: 7px;
+            display: block;
+            font: inherit;
+            margin: 8px 0 18px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .dialog-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .list-item {
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏆 Completed Tasks</h1>
-            <p>Your Azure learning progress</p>
+    <main class="container">
+        <header class="header">
+            <h1>Player Progress</h1>
+            <p>Your Azure Isekai identity, tasks, and grading history</p>
+        </header>
+
+        <div id="loading" class="loading">Loading your progress...</div>
+        <div id="error" class="message error" role="alert"></div>
+        <div id="success" class="message success" role="status"></div>
+
+        <div id="content" hidden>
+            <section class="profile-card" aria-labelledby="profileHeading">
+                <h2 id="profileHeading">Player</h2>
+                <div class="profile-grid">
+                    <div>
+                        <span class="label">Signed-in email</span>
+                        <span id="email" class="value"></span>
+                    </div>
+                    <div>
+                        <span class="label">Registered subscription</span>
+                        <span id="subscriptionId" class="value"></span>
+                    </div>
+                    <div>
+                        <span class="label">Last activity</span>
+                        <span id="lastActivity" class="value"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats-grid" aria-label="Progress summary">
+                <div class="stat">
+                    <strong id="totalScore">0</strong>
+                    <span>Total score</span>
+                </div>
+                <div class="stat">
+                    <strong id="passedCount">0</strong>
+                    <span>Passed tests</span>
+                </div>
+                <div class="stat">
+                    <strong id="failedCount">0</strong>
+                    <span>Failed attempts retained</span>
+                </div>
+            </section>
+
+            <section id="activeTaskSection" class="section active-task" hidden>
+                <h2>Active Task</h2>
+                <div class="profile-grid">
+                    <div>
+                        <span class="label">Task</span>
+                        <span id="activeTaskName" class="value"></span>
+                    </div>
+                    <div>
+                        <span class="label">NPC</span>
+                        <span id="activeTaskNpc" class="value"></span>
+                    </div>
+                    <div>
+                        <span class="label">Reward</span>
+                        <span id="activeTaskReward" class="value"></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Passed Tests</h2>
+                <div id="passedTasks" class="list"></div>
+                <p id="noPassedTasks" class="empty">No tests passed yet.</p>
+            </section>
+
+            <section class="danger-zone">
+                <h2>Reset Game Progress</h2>
+                <p>
+                    Resetting removes your active task, NPC game state, score,
+                    and passed-test progress. It keeps your failed-attempt
+                    history, registered subscription, grading reports, and
+                    Azure access.
+                </p>
+                <p>Close any other Azure Isekai tabs before resetting.</p>
+                <button id="openResetDialog" class="danger-button" type="button">
+                    Reset game progress
+                </button>
+            </section>
         </div>
-        
-        <div id="loading" class="loading">
-            <p>Loading your completed tasks...</p>
+
+        <a href="index.html" class="back-link">Back to Game</a>
+    </main>
+
+    <dialog id="resetDialog" aria-labelledby="resetDialogTitle">
+        <h2 id="resetDialogTitle">Confirm game reset</h2>
+        <p>
+            Type <strong>RESET</strong> to remove current progress. Failed
+            attempts and subscription registration will be preserved.
+        </p>
+        <label for="resetConfirmation">Confirmation</label>
+        <input id="resetConfirmation" autocomplete="off">
+        <div class="dialog-actions">
+            <button id="cancelReset" class="secondary-button" type="button">Cancel</button>
+            <button id="confirmReset" class="danger-button" type="button" disabled>
+                Reset now
+            </button>
         </div>
-        
-        <div id="error" class="error" style="display: none;"></div>
-        
-        <div id="results" style="display: none;">
-            <div class="score-summary">
-                <h2 id="totalScore">Total Score: 0</h2>
-                <p id="taskCount">0 tasks completed</p>
-            </div>
-            
-            <div class="tasks-container">
-                <h3>Completed Tasks:</h3>
-                <div id="tasksList"></div>
-            </div>
-        </div>
-        
-        <div id="noTasks" class="no-tasks" style="display: none;">
-            <h3>No tasks completed yet</h3>
-            <p>Start your Azure learning journey by playing the game!</p>
-        </div>
-        
-        <a href="index.html" class="back-link">← Back to Game</a>
-    </div>
+    </dialog>
 
     <script>
-        async function loadPassedTasks() {
+        const elements = {
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error'),
+            success: document.getElementById('success'),
+            content: document.getElementById('content'),
+            email: document.getElementById('email'),
+            subscriptionId: document.getElementById('subscriptionId'),
+            lastActivity: document.getElementById('lastActivity'),
+            totalScore: document.getElementById('totalScore'),
+            passedCount: document.getElementById('passedCount'),
+            failedCount: document.getElementById('failedCount'),
+            activeTaskSection: document.getElementById('activeTaskSection'),
+            activeTaskName: document.getElementById('activeTaskName'),
+            activeTaskNpc: document.getElementById('activeTaskNpc'),
+            activeTaskReward: document.getElementById('activeTaskReward'),
+            passedTasks: document.getElementById('passedTasks'),
+            noPassedTasks: document.getElementById('noPassedTasks'),
+            resetDialog: document.getElementById('resetDialog'),
+            resetConfirmation: document.getElementById('resetConfirmation'),
+            confirmReset: document.getElementById('confirmReset')
+        };
+
+        function showMessage(type, message) {
+            elements.error.style.display = 'none';
+            elements.success.style.display = 'none';
+            const target = type === 'success' ? elements.success : elements.error;
+            target.textContent = message;
+            target.style.display = 'block';
+        }
+
+        function formatDate(value) {
+            if (!value) {
+                return 'No game activity yet';
+            }
+            const date = new Date(value);
+            return Number.isNaN(date.getTime())
+                ? 'Unknown'
+                : date.toLocaleString();
+        }
+
+        function appendListItem(container, title, metadata, badge) {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+
+            const details = document.createElement('div');
+            details.className = 'item-details';
+            const titleElement = document.createElement('span');
+            titleElement.className = 'item-title';
+            titleElement.textContent = title;
+            const metadataElement = document.createElement('span');
+            metadataElement.className = 'item-meta';
+            metadataElement.textContent = metadata;
+            details.append(titleElement, metadataElement);
+            item.appendChild(details);
+
+            if (badge) {
+                const badgeElement = document.createElement('span');
+                badgeElement.className = 'badge';
+                badgeElement.textContent = badge;
+                item.appendChild(badgeElement);
+            }
+
+            container.appendChild(item);
+        }
+
+        function renderProfile(profile) {
+            const passedTasks = profile.passedTasks || [];
+
+            elements.email.textContent = profile.email || 'Unknown';
+            elements.subscriptionId.textContent =
+                profile.subscriptionId || 'Not registered';
+            elements.lastActivity.textContent = formatDate(profile.lastActivity);
+            elements.totalScore.textContent = profile.totalMarks || 0;
+            elements.passedCount.textContent = passedTasks.length;
+            elements.failedCount.textContent = profile.failedAttemptCount || 0;
+
+            elements.activeTaskSection.hidden = !profile.activeTask;
+            if (profile.activeTask) {
+                elements.activeTaskName.textContent =
+                    profile.activeTask.name || 'Unknown';
+                elements.activeTaskNpc.textContent =
+                    profile.activeTask.npc || 'Unknown';
+                elements.activeTaskReward.textContent =
+                    `${profile.activeTask.reward || 0} points`;
+            }
+
+            elements.passedTasks.replaceChildren();
+            passedTasks.forEach(task => {
+                appendListItem(
+                    elements.passedTasks,
+                    task.name || 'Unnamed test',
+                    'Completed',
+                    `${task.mark || 0} points`);
+            });
+            elements.noPassedTasks.hidden = passedTasks.length !== 0;
+        }
+
+        async function loadProgress() {
+            elements.loading.hidden = false;
+            elements.content.hidden = true;
             try {
                 const response = await fetch('/api/pass-task');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const body = await response.json();
+                if (!response.ok || body.success === false) {
+                    throw new Error(body.error || `Request failed (${response.status})`);
                 }
-                
-                const data = await response.json();
-                
-                document.getElementById('loading').style.display = 'none';
-                
-                if (data.success === false || data.error) {
-                    showError(data.error || 'Failed to load tasks');
-                    return;
-                }
-                
-                const result = data.data;
-                const totalMarks = result.totalMarks || 0;
-                const passedTasks = result.passedTasks || [];
-                
-                if (passedTasks.length === 0) {
-                    document.getElementById('noTasks').style.display = 'block';
-                } else {
-                    document.getElementById('results').style.display = 'block';
-                    document.getElementById('totalScore').textContent = `Total Score: ${totalMarks}`;
-                    document.getElementById('taskCount').textContent = `${passedTasks.length} tasks completed`;
-                    
-                    const tasksList = document.getElementById('tasksList');
-                    tasksList.innerHTML = '';
-                    
-                    passedTasks.forEach(task => {
-                        const taskItem = document.createElement('div');
-                        taskItem.className = 'task-item';
-                        taskItem.innerHTML = `
-                            <span class="task-name">${task.name}</span>
-                            <span class="task-score">${task.mark} points</span>
-                        `;
-                        tasksList.appendChild(taskItem);
-                    });
-                }
-                
+
+                renderProfile(body.data || {});
+                elements.content.hidden = false;
             } catch (error) {
-                console.error('Error loading passed tasks:', error);
-                document.getElementById('loading').style.display = 'none';
-                showError('Failed to load completed tasks. Please try again later.');
+                console.error('Failed to load player progress.', error);
+                showMessage(
+                    'error',
+                    error.message || 'Failed to load player progress.');
+            } finally {
+                elements.loading.hidden = true;
             }
         }
-        
-        function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+
+        async function resetGame() {
+            elements.confirmReset.disabled = true;
+            try {
+                const response = await fetch('/api/pass-task', {
+                    method: 'POST'
+                });
+                const body = await response.json();
+                if (!response.ok || body.success === false) {
+                    throw new Error(body.error || `Reset failed (${response.status})`);
+                }
+
+                const result = body.data || {};
+                elements.resetDialog.close();
+                elements.resetConfirmation.value = '';
+                showMessage(
+                    'success',
+                    `Game reset complete. Removed ${result.removedGameStates || 0} game-state records and ${result.removedPassedTests || 0} passed-test records. Preserved ${result.preservedFailedAttempts || 0} failed attempts.`);
+                await loadProgress();
+            } catch (error) {
+                console.error('Failed to reset game progress.', error);
+                showMessage(
+                    'error',
+                    error.message || 'Failed to reset game progress.');
+            } finally {
+                elements.confirmReset.disabled =
+                    elements.resetConfirmation.value !== 'RESET';
+            }
         }
-        
-        // Load tasks when page loads
-        document.addEventListener('DOMContentLoaded', loadPassedTasks);
+
+        document.getElementById('openResetDialog').addEventListener('click', () => {
+            elements.resetConfirmation.value = '';
+            elements.confirmReset.disabled = true;
+            elements.resetDialog.showModal();
+            elements.resetConfirmation.focus();
+        });
+        document.getElementById('cancelReset').addEventListener('click', () => {
+            elements.resetDialog.close();
+        });
+        elements.resetConfirmation.addEventListener('input', () => {
+            elements.confirmReset.disabled =
+                elements.resetConfirmation.value !== 'RESET';
+        });
+        elements.confirmReset.addEventListener('click', resetGame);
+        document.addEventListener('DOMContentLoaded', loadProgress);
     </script>
 </body>
 </html>

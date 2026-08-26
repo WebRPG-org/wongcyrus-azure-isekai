@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "cd api && npm install && npm run build",
-    "dev": "swa start ./ --api-location api"
+    "dev": "swa start ./ --api-location api",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=24.19.0"

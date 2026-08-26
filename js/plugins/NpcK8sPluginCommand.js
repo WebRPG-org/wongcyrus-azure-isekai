@@ -178,10 +178,7 @@
             $gameMessage.add(wrapText(json.message));
           }
 
-          // Handle URLs
-          if (json.easter_egg_url) {
-            popitup(json.easter_egg_url);
-          }
+          let popupUrl = json.easter_egg_url || '';
 
           // Show additional information
           if (json.score !== undefined) {
@@ -204,11 +201,14 @@
             $gameMessage.add(`Test Results: ${passed}/${total} tests passed`);
             if (passed < total) {
               $gameMessage.add('Please fix the issues and talk to me again.');
-              // Popup test result XML if available
               if (json.additional_data.testResultXmlUrl) {
-                popitup(json.additional_data.testResultXmlUrl);
+                popupUrl = json.additional_data.testResultXmlUrl;
               }
             }
+          }
+
+          if (popupUrl) {
+            popitup(popupUrl);
           }
 
           // Show next steps (only for successful responses)

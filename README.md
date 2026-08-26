@@ -1,47 +1,57 @@
-# Azure-isekai
+# Azure Isekai
 
-Azure Isekai (異世界) is an open-source RPG designed for hands-on Azure learning through gamification. Ideal for junior to Higher Diploma students of Hong Kong Institute of Information Technology (HKIIT), it transforms Azure education into an engaging adventure.
+Azure Isekai is a web RPG for hands-on Azure learning. NPCs assign
+infrastructure tasks, the grading service validates student-owned Azure
+resources, and the game records progress and rewards.
 
-1. Role-Playing Adventure: Students interact with NPCs who assign Azure tasks.
-2. Task-Based Learning: Tasks involve setting up and managing Azure.
-3. Scalable Grading: Application tests Azure setups within Azure Functions.
-4. Progress Tracking: Students track progress and earn rewards.
-5. This game offers practical Azure experience in a fun, cost-effective way.
-6. GenAI Chat: Integrates Generative AI to make NPC interactions more dynamic and fun, enhancing the overall learning experience.
+This repository contains:
 
-This repository hosts a Web RPG game that you can fork and customize to your liking.
+- the static RPG Maker frontend;
+- Microsoft Entra sign-in routes for Azure Static Web Apps;
+- server-side Azure Functions proxies under `api/`;
+- subscription registration and player-progress pages.
+
+The browser never receives backend Function keys or chooses the grading
+identity. The Static Web Apps API derives the signed-in email from the trusted
+client principal and sends a short-lived signed assertion to the grading
+Function.
 
 
 ## Demo
 
 [![#Azure Isekai (Alpha) - free #aks #rpggame](https://img.youtube.com/vi/dIwNWwz681k/0.jpg)](https://youtu.be/dIwNWwz681k)
 
-# Development
+## Development
 
-This game was created using [RPG maker](https://www.rpgmakerweb.com/), with a custom plugin, "NpcK8sPluginCommand.js," located in the "js\\plugins" directory.
+This game was created using [RPG Maker](https://www.rpgmakerweb.com/), with a
+custom plugin, `NpcK8sPluginCommand.js`, under `js/plugins`.
 You can modify the game within RPG Maker. To enable non-player characters (NPCs) to interact with the grader API, you must configure the Plugin Command.
 
-## How to set the NPC NpcK8sPluginCommand?
+## Configure an NPC Plugin Command
 
 1. **Open the NPC Editor:** Right-click the NPC and select "Edit" from the context menu.
-
-   ![NPC Edit](img/readme/npc_edit.png)
-
 2. **Access Plugin Commands:** Within the NPC Editor, click the "Plugin Command" button.
-
-   ![Plugin](img/readme/plugin_command.png)
-
 3. **Define the Plugin Command:** Enter the desired command in the provided field. Ensure the command includes the unique NPC name as defined in the `NpcBackgroundTable`.
 
-   ![Set Commmand](img/readme/set_command.png)
+## Local Development
 
-## Game Development and Testing
+Use Node.js 24.19 or newer and Azure Static Web Apps CLI 2.x:
 
-1. Open the game folder in VS Code.
-2. Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension.
-3. Right-click `index.html` and select "Open with Live Server."
-4. Set the query parameters:
-   `?baseUrl=https://your-api-endpoint/&game=game01&apiKey=INDIVIDUAL_API_KEY`
+```bash
+npm install --global @azure/static-web-apps-cli@2
+npm install
+cd api && npm install && cd ..
+npm run dev
+```
+
+`npm run dev` starts the Static Web Apps emulator with the local API. Configure
+the emulator's authentication identity and server-side backend settings; do
+not put Function keys, proxy-signing keys, or student emails in browser query
+parameters.
+
+Production is deployed by the grading-engine repository's
+`Infrastructure/deploy-static-web-app.sh`, which supplies the complete
+server-side settings map.
 
 ## Core Developers
 
